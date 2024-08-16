@@ -19,7 +19,12 @@ export const handler = async (event) => {
       },
       Message: {
         Body: {
+          Text: {
+            Charset: 'UTF-8',
+            Data: `Message in text format`
+          },
           Html: {
+            Charset: 'UTF-8',
             Data: `<html lang="en"><h1>New Contact Us Message</h1><p>FirstName: ${body.firstName}</P><p>LastName: ${body.lastName}</P><p>Email: ${body.email}</P><p>Phone Number: ${body.phone}</P><p>Message: ${body.message}</P></html>`,
           },
         },
