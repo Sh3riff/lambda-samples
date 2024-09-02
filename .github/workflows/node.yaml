@@ -1,0 +1,36 @@
+name: deploy Lambda function
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Use Node 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+      - name: Install dependencies
+        run: npm i
+      - name: Bundle code
+        run: zip -r lambda.zip ./node_modules ./index.mjs ./package.json
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/Github_Actions_Role
+          aws-region: us-east-1
+      - name: Update Production Function code
+        if: github.ref == 'refs/heads/main'
+        run: aws lambda update-function-code --function-name kwilax-smile-verification-prod-function --zip-file fileb://lambda.zip
+      - name: Update Development Function code
+        if: github.ref == 'refs/heads/develop'
+        run: aws lambda update-function-code --function-name kwilax-smile-verification-dev-function --zip-file fileb://lambda.zip
