@@ -1,0 +1,36 @@
+name: deploy Lambda function
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.x'
+      - name: Install dependencies
+        run: go get .
+      - name: Build
+        run: GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -ldflags="-w -s" -o ./bootstrap
+      - name: Bundle code
+        run: zip -r lambda.zip bootstrap
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/Github_Actions_Role
+          aws-region: us-east-1
+      - name: Update Production Function
+        if: github.ref == 'refs/heads/main'
+        run: aws lambda update-function-code --function-name Kwilax-core --zip-file fileb://lambda.zip
+      - name: Update Development Function
+        if: github.ref == 'refs/heads/develop'
+        run: aws lambda update-function-code --function-name Kwilax-core-dev --zip-file fileb://lambda.zip
