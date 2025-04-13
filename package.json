@@ -1,0 +1,30 @@
+{
+  "name": "kwiveti-buyer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "bundle": "zip -r ../lambda.zip ./node_modules ./dist ./lambda.js && cd .. && rm -rf dist lambdaBuild/dist",
+    "lambda-bundle": "rm -rf lambdaBuild && mkdir lambdaBuild && cp -R dist ./lambda.js ./package.json ./lambdaBuild && cd ./lambdaBuild && npm i --omit=dev && npm rm dotenv  && npm run bundle",
+    "deploy-dev-lambda": "aws lambda update-function-code --function-name kwiveti_buyer_dev --zip-file fileb://lambda.zip && rm ./lambda.zip",
+    "deploy-prod-lambda": "aws lambda update-function-code --function-name kwiveti_buyer_prod --zip-file fileb://lambda.zip && rm ./lambda.zip",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@kwilax/fauna-simplified": "^1.2.0",
+    "@types/node": "^20.4.1",
+    "axios": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.1",
+    "serverless-http": "^3.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
